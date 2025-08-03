@@ -1,0 +1,22 @@
+import mensajeros.*
+
+describe "Primera Parte" {
+  test "Test 1" {
+    //Que Roberto (90kg) puede llevar un paquete que está pago
+    //en un camión que tiene un acoplado.
+    const paquete1 = new Paquete(destino=puenteDeBrooklyn, estaPago=true)
+    roberto.peso(90)
+    roberto.transporte(camion)
+    camion.cantidadDeAcoplados(1)
+
+    assert.that(paquete1.puedeSerEntregadoPor(roberto))
+  }
+
+  test "Test 2" {
+    //Que Neo con crédito no puede llevar un
+    //paquete que no está pago a la matrix.
+    const paquete2 = new Paquete(destino=laMatrix, estaPago=false)
+
+    assert.notThat(paquete2.puedeSerEntregadoPor(neo))
+  }
+}
