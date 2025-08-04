@@ -3,21 +3,32 @@
 class Paquete {
   var property destino
   var property estaPago
+  var property precio = 50
 
   method puedeSerEntregadoPor(mensajero) {
-    return self.destino().cumpleCondicion(mensajero) && self.estaPago()
+    return mensajero.puedeLlegarA(destino) && self.estaPago()
   }
-  
+
+  method serEntregadoPor(mensajero) {
+    mensajero.entregar(self)
+  }
+
 }
 
 
 /// MENSAJEROS ///
-
 class Mensajero {
 
   method puedeLlegarA(destino) {
     return destino.cumpleCondicion(self)
   }
+
+  method puedeEntregar(paquete) = paquete.puedeSerEntregadoPor(self)
+
+  method entregar(paquete) {
+    
+  }
+  
 }
 
 
@@ -73,3 +84,76 @@ object laMatrix {
     return mensajero.puedeHacerLlamada()
   }
 }
+
+///// SEGUNDA PARTE: EMPRESA DE MENSAJERÍA /////
+
+class EmpresaDeMensajeria {
+  var property mensajeros = []
+  var property paquetesPendientes = []
+  
+  method contratarA(mensajero) {
+    mensajeros.add(mensajero)
+  }
+
+  method despedirA(mensajero) {
+    mensajeros.remove(mensajero)
+  }
+
+  method despedirTodos() {
+    mensajeros.clear()
+  }
+
+  method esGrande() = (mensajeros.size() > 2)
+
+  method entregaPrimerEmpleado(paquete) = paquete.puedeSerEntregadoPor(mensajeros.first())
+
+  method pesoUltimoEmpleado() = mensajeros.last().peso()
+
+  method puedeEntregar(paquete) = mensajeros.any({m => m.puedeEntregar(paquete)})
+
+  method mensajerosQuePuedenLlevar(paquete) = mensajeros.filter({m => m.puedeEntregar(paquete)})
+
+  method tieneSobrepeso() = (mensajeros.sum({m => m.peso()}) / mensajeros.size()) > 500
+
+  method enviar(paquete) {
+    if (self.puedeEntregar(paquete)) {
+      (self.mensajerosQuePuedenLlevar(paquete).anyOne()).entregar(paquete)
+    } else {
+      self.paquetesPendientes().add(paquete)
+    }
+  }
+
+  method enviarPaquetes(listaPaquetes) {
+    listaPaquetes.forEach({p => p.serEntregadoPor(mensajeros.anyOne())})
+  }
+
+  method enviarPaquetePendienteMasCaro() {
+    const paqueteMasCaro = paquetesPendientes.max({p => p.precio()})
+    
+    if (self.puedeEntregar(paqueteMasCaro)) {
+      paquetesPendientes.remove(paqueteMasCaro)
+    }
+  }
+}
+
+///// TERCERA PARTE: MENSAJERÍA RECARGADA /////
+
+class Paquetito inherits Paquete(estaPago = true) {
+  override method puedeSerEntregadoPor(mensajero) = true
+}
+
+class PaquetonViajero inherits Paquete(precio = 100) {
+  var property pagoParcial = 0
+
+  method pagarParcial(monto) {
+    pagoParcial += monto
+  }
+  override method estaPago() = (pagoParcial == precio)
+
+  override method puedeSerEntregadoPor(mensajero) = self.estaPago()
+
+}
+
+
+
+//FALTAN TESTS
