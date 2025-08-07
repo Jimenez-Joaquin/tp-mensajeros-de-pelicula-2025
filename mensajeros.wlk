@@ -113,7 +113,7 @@ class EmpresaDeMensajeria {
 
   method mensajerosQuePuedenLlevar(paquete) = mensajeros.filter({m => m.puedeEntregar(paquete)})
 
-  method tieneSobrepeso() = (mensajeros.sum({m => m.peso()}) / mensajeros.size()) > 500
+  method tieneSobrepeso() = (mensajeros.sum({m => m.pesoTotal()}) / mensajeros.size()) > 500
 
   method enviar(paquete) {
     if (self.puedeEntregar(paquete)) {
@@ -132,17 +132,24 @@ class EmpresaDeMensajeria {
     
     if (self.puedeEntregar(paqueteMasCaro)) {
       paquetesPendientes.remove(paqueteMasCaro)
+      paqueteMasCaro.serEntregadoPor(mensajeros.anyOne())
+    } else {
+      self.error("No pudo enviarse paquete")
     }
   }
 }
 
 ///// TERCERA PARTE: MENSAJERÍA RECARGADA /////
 
-class Paquetito inherits Paquete(estaPago = true) {
+class Paquetito inherits Paquete {
+  override method precio() = 0
+  override method estaPago() = true
   override method puedeSerEntregadoPor(mensajero) = true
 }
 
-class PaquetonViajero inherits Paquete(precio = 100) {
+class PaquetonViajero inherits Paquete {
+  override method precio() = 100 * cantDestinos
+  var property cantDestinos
   var property pagoParcial = 0
 
   method pagarParcial(monto) {
